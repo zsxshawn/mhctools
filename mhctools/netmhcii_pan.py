@@ -195,7 +195,7 @@ def NetMHCIIpan(
         default_peptide_lengths=[15, 16, 17, 18, 19, 20],
         extra_flags=[]):
     """
-    This function wraps NetMHCIIpan4 and NetMHCIIpan3 to automatically detect which class to use.
+    This function wraps NetMHCIIpan4.3, NetMHCIIpan4 and NetMHCIIpan3 to automatically detect which class to use.
     """
     # convert to str since Python3 returns a "bytes" object.
     with open(os.devnull, 'w') as devnull:
@@ -208,14 +208,17 @@ def NetMHCIIpan(
         "process_limit": process_limit,
         "extra_flags": extra_flags,
     }
-    if "NetMHCIIpan-4.0" in output_str:
+    if "NetMHCIIpan-4.3" in output_str:
+        logger.info("Using NetMHCIIpan 4.3")
+        return NetMHCIIpan43(**kwargs)
+    elif "NetMHCIIpan-4.0" in output_str:
         logger.info("Using NetMHCIIpan 4.0")
         return NetMHCIIpan4(**kwargs)
     elif "NetMHCIIpan-3" in output_str:
         logger.info("Using NetMHCIIpan 3.x")
         return NetMHCIIpan3(**kwargs)
     else:
-        raise ValueError("This software expects NetMHCIIpan version 3.x or 4.0")
+        raise ValueError("This software expects NetMHCIIpan version 3.x, 4.0, or 4.3")
 
 
 class NetMHCIIpan43(NetMHCIIpanBase):
