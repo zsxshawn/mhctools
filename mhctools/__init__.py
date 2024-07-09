@@ -24,7 +24,7 @@ from .random_predictor import RandomBindingPredictor
 from .netmhcstabpan import NetMHCstabpan
 from .unsupported_allele import UnsupportedAllele
 
-__version__ = "1.9.2"
+__version__ = "1.9.3"
 
 __all__ = [
     "BindingPrediction",
@@ -55,6 +55,9 @@ __all__ = [
     "NetMHCIIpan4",
     "NetMHCIIpan4_BA",
     "NetMHCIIpan4_EL",
+    "NetMHCIIpan43",
+    "NetMHCIIpan43_BA",
+    "NetMHCIIpan43_EL",
     "NetMHCstabpan",
     "RandomBindingPredictor",
     "UnsupportedAllele",
