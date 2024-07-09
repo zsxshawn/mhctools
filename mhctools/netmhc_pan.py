@@ -9,7 +9,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# netmhc_pan.py
 
+import logging
 from subprocess import check_output
 import os
 
@@ -18,17 +20,22 @@ from .netmhc_pan3 import NetMHCpan3
 from .netmhc_pan4 import NetMHCpan4
 from .netmhc_pan41 import NetMHCpan41
 
+logger = logging.getLogger(__name__)
+
 def NetMHCpan(
         alleles,
+        custom_mhc_sequences=None,
         program_name="netMHCpan",
         process_limit=-1,
         default_peptide_lengths=[9],
-        extra_flags=[],
-        custom_mhc_sequences=None):
+        extra_flags=[]):
     """
     This function wraps NetMHCpan28 and NetMHCpan3 to automatically detect which class
     to use, with the help of the miraculous and strange '--version' netmhcpan argument.
     """
+    # convert to str since Python3 returns a `bytes` object.
+    # The '_MHCTOOLS_VERSION_SNIFFING' here is meaningless, but it is necessary
+    # to call `netmhcpan --version` with some argument, otherwise it hangs.
     with open(os.devnull, 'w') as devnull:
         output = check_output([
             program_name, "--version", "_MHCTOOLS_VERSION_SNIFFING"],
@@ -36,11 +43,11 @@ def NetMHCpan(
     output_str = output.decode("ascii", "ignore")
     common_kwargs = {
         "alleles": alleles,
+        "custom_mhc_sequences": custom_mhc_sequences,
         "default_peptide_lengths": default_peptide_lengths,
         "program_name": program_name,
         "process_limit": process_limit,
         "extra_flags": extra_flags,
-        "custom_mhc_sequences": custom_mhc_sequences,
     }
     if "NetMHCpan version 2.8" in output_str:
         return NetMHCpan28(**common_kwargs)
