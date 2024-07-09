@@ -1,25 +1,14 @@
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#       http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# netmhc_pan41.py
 
 from .base_commandline_predictor import BaseCommandlinePredictor
 from .parsing import parse_netmhc41_stdout
 from functools import partial
 import tempfile
 
-
 class NetMHCpan41(BaseCommandlinePredictor):
     def __init__(
             self,
-            alleles=None,
+            alleles,
             custom_mhc_sequences=None,
             default_peptide_lengths=[9],
             program_name="netMHCpan",
@@ -41,12 +30,8 @@ class NetMHCpan41(BaseCommandlinePredictor):
         else:
             raise ValueError("Unsupported mode", mode)
 
-        if custom_mhc_sequences:
-            self.custom_mhc_file = tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".fasta")
-            self.custom_mhc_file.write(custom_mhc_sequences)
-            self.custom_mhc_file.close()
-            alleles = [self.custom_mhc_file.name]
-        
+        self.custom_mhc_sequences = custom_mhc_sequences
+
         BaseCommandlinePredictor.__init__(
             self,
             program_name=program_name,
@@ -60,6 +45,18 @@ class NetMHCpan41(BaseCommandlinePredictor):
             extra_flags=flags + extra_flags,
             process_limit=process_limit)
 
+    def prepare_input_file(self, peptides):
+        peptide_file = super(NetMHCpan41, self).prepare_input_file(peptides)
+
+        if self.custom_mhc_sequences:
+            with tempfile.NamedTemporaryFile(delete=False, mode='w') as custom_mhc_file:
+                custom_mhc_file.write(self.custom_mhc_sequences)
+            self.allele_file = custom_mhc_file.name
+            self.extra_flags += ["-a", self.allele_file]
+
+        return peptide_file
+
+
 class NetMHCpan41_EL(NetMHCpan41):
     """
     Wrapper for NetMHCpan4 when the preferred mode is elution score
@@ -67,6 +64,7 @@ class NetMHCpan41_EL(NetMHCpan41):
     def __init__(
             self,
             alleles,
+            custom_mhc_sequences=None,
             default_peptide_lengths=[9],
             program_name="netMHCpan",
             process_limit=-1,
@@ -74,6 +72,7 @@ class NetMHCpan41_EL(NetMHCpan41):
         NetMHCpan41.__init__(
             self,
             alleles=alleles,
+            custom_mhc_sequences=custom_mhc_sequences,
             default_peptide_lengths=default_peptide_lengths,
             program_name=program_name,
             process_limit=process_limit,
@@ -88,6 +87,7 @@ class NetMHCpan41_BA(NetMHCpan41):
     def __init__(
             self,
             alleles,
+            custom_mhc_sequences=None,
             default_peptide_lengths=[9],
             program_name="netMHCpan",
             process_limit=-1,
@@ -95,6 +95,7 @@ class NetMHCpan41_BA(NetMHCpan41):
         NetMHCpan41.__init__(
             self,
             alleles=alleles,
+            custom_mhc_sequences=custom_mhc_sequences,
             default_peptide_lengths=default_peptide_lengths,
             program_name=program_name,
             process_limit=process_limit,
