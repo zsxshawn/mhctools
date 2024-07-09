@@ -13,12 +13,14 @@
 from .base_commandline_predictor import BaseCommandlinePredictor
 from .parsing import parse_netmhc41_stdout
 from functools import partial
+import tempfile
 
 
 class NetMHCpan41(BaseCommandlinePredictor):
     def __init__(
             self,
-            alleles,
+            alleles=None,
+            custom_mhc_sequences=None,
             default_peptide_lengths=[9],
             program_name="netMHCpan",
             process_limit=-1,
@@ -39,6 +41,12 @@ class NetMHCpan41(BaseCommandlinePredictor):
         else:
             raise ValueError("Unsupported mode", mode)
 
+        if custom_mhc_sequences:
+            self.custom_mhc_file = tempfile.NamedTemporaryFile(delete=False, mode="w", suffix=".fasta")
+            self.custom_mhc_file.write(custom_mhc_sequences)
+            self.custom_mhc_file.close()
+            alleles = [self.custom_mhc_file.name]
+        
         BaseCommandlinePredictor.__init__(
             self,
             program_name=program_name,
